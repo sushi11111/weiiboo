@@ -1,0 +1,6 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.weiiboo.common.redis.config.CustomRedisConfig,\
+  com.weiiboo.common.redis.config.RedissonConfig,\
+  com.weiiboo.common.redis.properties.RedisProperties,\
+  com.weiiboo.common.redis.utils.BloomFilterUtils,\
+  com.weiiboo.common.redis.utils.RedisCache

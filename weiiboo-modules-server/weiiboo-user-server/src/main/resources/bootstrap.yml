@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: weiiboo-user-server
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:8848
+        namespace: ae83db11-7015-425b-93b1-6bbc4341dce5
+        group: DEFAULT_GROUP
+        file-extension: yaml
+        refresh-enabled: true

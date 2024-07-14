@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiiboo.note.mapper.NotesMapper">
+
+    <resultMap id="BaseResultMap" type="com.weiiboo.modules.api.notes.domin.NotesDO">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="belongUserId" column="belong_user_id" jdbcType="BIGINT"/>
+            <result property="belongCategory" column="belong_category" jdbcType="INTEGER"/>
+            <result property="type" column="type" jdbcType="INTEGER"/>
+            <result property="notesResources" column="notes_resources" jdbcType="VARCHAR"/>
+            <result property="notesLikeNum" column="notes_like_num" jdbcType="INTEGER"/>
+            <result property="coverPicture" column="cover_picture" jdbcType="VARCHAR"/>
+            <result property="notesCollectNum" column="notes_collect_num" jdbcType="INTEGER"/>
+            <result property="commentNum" column="comment_num" jdbcType="INTEGER"/>
+            <result property="notesViewNum" column="notes_view_num" jdbcType="INTEGER"/>
+            <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="longitude" column="longitude" jdbcType="DOUBLE"/>
+            <result property="latitude" column="latitude" jdbcType="DOUBLE"/>
+            <result property="province" column="province" jdbcType="VARCHAR"/>
+            <result property="authority" column="authority" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,title,content,
+        belong_user_id,belong_category,type,
+        notes_resources,notes_like_num,comment_num,notes_view_num,address,
+        authority,create_time,update_time,cover_picture,
+        notes_collect_num,province,latitude,longitude
+    </sql>
+
+    <select id="selectPageByTime" resultType="com.weiiboo.modules.api.notes.domin.NotesDO">
+        SELECT
+            <include refid="Base_Column_List"/>
+            FROM notes
+            WHERE authority = 0
+                ORDER BY create_time desc
+            limit #{pageSize} offset #{offset}
+    </select>
+
+    <select id="selectPageByUserId" resultType="com.weiiboo.modules.api.notes.domin.NotesDO">
+        SELECT
+            <include refid="Base_Column_List"/>
+            FROM notes
+        WHERE belong_user_id = #{userId}
+        AND authority = #{authority}
+        ORDER BY create_time desc
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="selectPageByCategoryIdOrderByPraise" resultType="com.weiiboo.modules.api.notes.domin.NotesDO">
+        SELECT
+            <include refid="Base_Column_List"/>
+            FROM notes
+        WHERE belong_category = #{notesType}
+        AND authority = 0
+        <if test="notesType != 2">
+            AND type = #{notesType}
+        </if>
+        ORDER BY notes_like_num desc
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="selectPageByCategoryIdByUpdateTime" resultType="com.weiiboo.modules.api.notes.domin.NotesDO">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM notes
+        WHERE belong_category = #{notesType}
+        AND authority = 0
+        <if test="notesType != 2">
+            AND type = #{notesType}
+        </if>
+        ORDER BY update_time desc
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="getPraiseCountByUserId" resultType="java.lang.Integer">
+        SELECT SUM(notes_like_num) AS praiseCount
+        FROM notes
+        WHERE belong_user_id = #{userId}
+    </select>
+
+    <select id="getCollectCountByUserId" resultType="java.lang.Integer">
+        SELECT SUM(notes_collect_num) AS collectCount
+        FROM notes
+        WHERE belong_user_id = #{userId}
+    </select>
+
+    <select id="selectPageByAttentionUserId" resultType="com.weiiboo.modules.api.notes.domin.NotesDO">
+        SELECT 
+            <include refid="Base_Column_List"/>
+            FROM notes
+            WHERE authority = 0
+            AND belong_user_id IN
+                <foreach collection="attentionUserId" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            ORDER BY create_time DESC
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+</mapper>

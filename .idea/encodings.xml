@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-common/common-base/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-common/common-mybatis/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-common/common-redis/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-common/common-web/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-job-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-modules-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-modules-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-modules-api/weiiboo-user-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-modules-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-modules-server/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-modules-server/weiiboo-es-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-modules-server/weiiboo-im-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-modules-server/weiiboo-note-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-modules-server/weiiboo-user-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/weiiboo-third-server/src/main/java" charset="UTF-8" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>

@@ -1,0 +1,11 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.weiiboo.common.web.config.FeignConfig,\
+  com.weiiboo.common.web.config.WebMvcConfig,\
+  com.weiiboo.common.web.config.ThreadPoolConfig,\
+  com.weiiboo.common.web.utils.JWTUtil,\
+  com.weiiboo.common.web.properties.JwtProperties,\
+  com.weiiboo.common.web.properties.GaoDeMapProperties,\
+  com.weiiboo.common.web.utils.AddressUtil,\
+  com.weiiboo.common.web.aop.bloomFilter.BloomFilterAspect,\
+  com.weiiboo.common.web.aop.idempotent.IdempotentAspect,\
+  com.weiiboo.common.web.exception.handler.GlobalExceptionHandler

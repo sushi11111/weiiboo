@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiiboo.user.mapper.UserBlackMapper">
+
+    <resultMap id="BaseResultMap" type="com.weiiboo.modules.api.user.domin.UserBlackDO">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="userId" column="userId" jdbcType="INTEGER"/>
+            <result property="blackId" column="blackId" jdbcType="INTEGER"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,userId,blackId,
+        createTime
+    </sql>
+
+    <select id="selectOneByUserIdAndBlackIdIsExist" resultType="java.lang.Boolean">
+        <![CDATA[
+        SELECT
+            COUNT(1)
+        FROM
+            user_black_list
+        WHERE
+            userId = #{userId}
+          AND blackId = #{targetUserId}]]>
+    </select>
+
+    <select id="selectBlackList" resultType="com.weiiboo.modules.api.user.vo.UserBlackVO">
+        SELECT u.id AS userId,
+               u.avatar_url AS avatarUrl,
+               u.nickname AS nickname
+        FROM user_black_list AS ub
+            LEFT JOIN users AS u ON ub.blackId = u.id
+        ORDER BY ub.createTime DESC
+    </select>
+</mapper>
