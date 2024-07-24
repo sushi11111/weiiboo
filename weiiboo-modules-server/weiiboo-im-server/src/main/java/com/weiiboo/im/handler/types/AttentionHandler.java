@@ -5,16 +5,15 @@ import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
 import static com.weiiboo.im.handler.IMServerHandler.USER_CHANNEL_MAP;
 
 @Component
 @Slf4j
 public class AttentionHandler {
-    private final ChatHandler chatHandler;
-
-    public AttentionHandler(ChatHandler chatHandler) {
-        this.chatHandler = chatHandler;
-    }
+    @Resource
+    private ChatHandler chatHandler;
 
     public void execute(MessageVO messageVO) {
         Channel channel = USER_CHANNEL_MAP.get(messageVO.getTo());

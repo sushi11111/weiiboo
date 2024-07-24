@@ -5,14 +5,12 @@ import com.weiiboo.common.redis.utils.BloomFilterUtils;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 @Configuration
 public class ImConfig {
-    private final BloomFilterUtils bloomFilterUtils;
-
-    public ImConfig(BloomFilterUtils bloomFilterUtils) {
-        this.bloomFilterUtils = bloomFilterUtils;
-    }
+    @Resource
+    private BloomFilterUtils bloomFilterUtils;
 
     /**
      * 初始化布隆过滤器

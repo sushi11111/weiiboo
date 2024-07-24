@@ -14,6 +14,8 @@ import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
 import static com.weiiboo.im.handler.IMServerHandler.USER_CHANNEL_MAP;
 
 @Component
@@ -22,14 +24,11 @@ import static com.weiiboo.im.handler.IMServerHandler.USER_CHANNEL_MAP;
         topic = RocketMQTopicConstant.PRAISE_AND_COLLECT_REMIND_TOPIC,
         consumerGroup = RocketMQConsumerGroupConstant.PRAISE_AND_COLLECT_REMIND_CONSUMER_GROUP)
 public class PraiseAndCollectNotificationConsumer implements RocketMQListener<MessageExt> {
-    private final ChatHandler chatHandler;
-    private final BloomFilterUtils bloomFilterUtils;
+    @Resource
+    private ChatHandler chatHandler;
+    @Resource
+    private BloomFilterUtils bloomFilterUtils;
 
-    public PraiseAndCollectNotificationConsumer(ChatHandler chatHandler,
-                                                BloomFilterUtils bloomFilterUtils) {
-        this.chatHandler = chatHandler;
-        this.bloomFilterUtils = bloomFilterUtils;
-    }
     @Override
     public void onMessage(MessageExt messageExt) {
         if (bloomFilterUtils.mightContainBloomFilter(BloomFilterMap.ROCKETMQ_IDEMPOTENT_BLOOM_FILTER, messageExt.getMsgId())) {

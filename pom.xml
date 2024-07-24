@@ -14,6 +14,7 @@
         <module>weiiboo-modules-api</module>
         <module>weiiboo-modules-server</module>
         <module>weiiboo-third-server</module>
+        <module>weiiboo-job-server</module>
     </modules>
 
     <parent>

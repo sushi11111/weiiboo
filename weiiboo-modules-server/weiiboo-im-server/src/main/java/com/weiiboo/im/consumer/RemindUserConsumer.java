@@ -16,6 +16,7 @@ import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Map;
 
 import static com.weiiboo.im.handler.IMServerHandler.USER_CHANNEL_MAP;
@@ -26,17 +27,12 @@ import static com.weiiboo.im.handler.IMServerHandler.USER_CHANNEL_MAP;
         consumerGroup = RocketMQConsumerGroupConstant.NOTES_REMIND_TARGET_CONSUMER_GROUP)
 public class RemindUserConsumer implements RocketMQListener<MessageExt> {
 
-    private final ChatHandler chatHandler;
-    private final RedisCache redisCache;
-    private final BloomFilterUtils bloomFilterUtils;
-
-    public RemindUserConsumer(RedisCache redisCache,
-                              ChatHandler chatHandler,
-                              BloomFilterUtils bloomFilterUtils) {
-        this.redisCache = redisCache;
-        this.chatHandler = chatHandler;
-        this.bloomFilterUtils = bloomFilterUtils;
-    }
+    @Resource
+    private ChatHandler chatHandler;
+    @Resource
+    private RedisCache redisCache;
+    @Resource
+    private BloomFilterUtils bloomFilterUtils;
 
     @Override
     public void onMessage(MessageExt messageExt) {
@@ -59,8 +55,8 @@ public class RemindUserConsumer implements RocketMQListener<MessageExt> {
         messageVO.setFrom(userId);
         messageVO.setFromAvatar(avatarUrl);
         messageVO.setFromName(nickName);
-        messageVO.setTo((String) map.get("toUserId"));
         messageVO.setContent((String) map.get("coverPicture"));
+        messageVO.setTo((String) map.get("toUserId"));
         messageVO.setTime(System.currentTimeMillis());
         messageVO.setMessageType(7);
         messageVO.setChatType(0);

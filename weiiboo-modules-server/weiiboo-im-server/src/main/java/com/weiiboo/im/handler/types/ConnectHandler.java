@@ -10,6 +10,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -18,13 +19,12 @@ import static com.weiiboo.im.handler.IMServerHandler.USER_CHANNEL_MAP;
 @Component
 @Slf4j
 public class ConnectHandler {
-    private final RedisCache redisCache;
+    @Resource
+    private RedisCache redisCache;
 
-    private final Executor asyncThreadExecutor;
-    public ConnectHandler(RedisCache redisCache, Executor asyncThreadExecutor) {
-        this.redisCache = redisCache;
-        this.asyncThreadExecutor = asyncThreadExecutor;
-    }
+    @Resource(name = "asyncThreadExecutor")
+    private Executor asyncThreadExecutor;
+
     public void execute(ChannelHandlerContext channelHandlerContext, MessageVO message) {
         log.info("用户{}连接成功", message.getFrom());
         // 用户上线时，都会发送一条连接信息，将用户和channel绑定
@@ -40,7 +40,7 @@ public class ConnectHandler {
         // 拉去离线消息
         Set<String> keys = redisCache.keys(RedisKey.build(RedisConstant.REDIS_KEY_USER_OFFLINE_MESSAGE, message.getFrom()));
         if (keys != null && !keys.isEmpty()) {
-            log.info("用户{}上线了，有离线消息，进行拉取", message.getFrom());
+            log.info("用户{}上线，有离线消息，进行拉取", message.getFrom());
             keys.forEach(key -> {
                 //  异步执行
                 asyncThreadExecutor.execute(() -> {

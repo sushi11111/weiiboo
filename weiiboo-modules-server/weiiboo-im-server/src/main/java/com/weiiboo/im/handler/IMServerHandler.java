@@ -18,10 +18,10 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,18 +39,18 @@ public class IMServerHandler extends SimpleChannelInboundHandler<TextWebSocketFr
 
     public static IMServerHandler imServerHandler;
 
-    @Autowired
-    private ConnectHandler connectHandler;
-    @Autowired
-    private AuthenticationHandler authenticationHandler;
-    @Autowired
-    private ChatHandler chatHandler;
-    @Autowired
-    private RedisCache redisCache;
-    @Autowired
-    private Executor asyncThreadExecutor;
-    @Autowired
+    @Resource
     private AttentionHandler attentionHandler;
+    @Resource
+    private AuthenticationHandler authenticationHandler;
+    @Resource
+    private ChatHandler chatHandler;
+    @Resource
+    private ConnectHandler connectHandler;
+    @Resource
+    private RedisCache redisCache;
+    @Resource
+    private Executor asyncThreadExecutor;
 
     public IMServerHandler() {
     }

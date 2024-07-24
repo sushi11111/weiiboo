@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -27,22 +28,20 @@ public class IMServer {
     @Value("${netty.application.name}")
     private String applicationName;
 
-    private final NacosServiceManager nacosServiceManager;
-
-    private final IMServerInitialzer imServerInitialzer;
-
-    private final NacosDiscoveryProperties nacosDiscoveryProperties;
+    @Resource
+    private NacosServiceManager nacosServiceManager;
+    @Resource
+    private IMServerInitialzer imServerInitialzer;
+    @Resource
+    private NacosDiscoveryProperties nacosDiscoveryProperties;
     private static final EventLoopGroup BOSS_GROUP;
     private static final EventLoopGroup WORKER_GROUP;
+
     static {
         BOSS_GROUP = new NioEventLoopGroup();
         WORKER_GROUP = new NioEventLoopGroup();
     }
-    public IMServer(IMServerInitialzer imServerInitialzer, NacosServiceManager nacosServiceManager, NacosDiscoveryProperties nacosDiscoveryProperties) {
-        this.imServerInitialzer = imServerInitialzer;
-        this.nacosServiceManager = nacosServiceManager;
-        this.nacosDiscoveryProperties = nacosDiscoveryProperties;
-    }
+
     /**
      * 将netty服务注册到nacos
      */
@@ -54,6 +53,7 @@ public class IMServer {
         instance.setPort(port);
         namingService.registerInstance(applicationName,instance);
     }
+
     /**
      * 启动IM服务器
      */
@@ -81,6 +81,7 @@ public class IMServer {
             log.error("nacos注册失败",e);
         }
     }
+
     @PreDestroy
     public void close(){
         BOSS_GROUP.shutdownGracefully();

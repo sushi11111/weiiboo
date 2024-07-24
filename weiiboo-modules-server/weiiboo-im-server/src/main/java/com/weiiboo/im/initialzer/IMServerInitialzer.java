@@ -10,20 +10,21 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+
 @Component
 public class IMServerInitialzer extends ChannelInitializer<SocketChannel> {
-    private final IMServerHandler imServerHandler;
+    @Resource
+    private IMServerHandler imServerHandler;
 
-    public IMServerInitialzer(IMServerHandler imServerHandler) {
-        this.imServerHandler = imServerHandler;
-    }
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         ChannelPipeline pipeline = socketChannel.pipeline();
         pipeline.addLast(new HttpServerCodec())
                 .addLast(new ChunkedWriteHandler())
                 .addLast(new HttpObjectAggregator(1024*64))
-                .addLast(new WebSocketServerProtocolHandler("/ws/xfs"))
+                .addLast(new WebSocketServerProtocolHandler("/hhh/weiiboo"))
                 .addLast(new IdleStateHandler(5, 0, 0))
                 .addLast(imServerHandler);
     }

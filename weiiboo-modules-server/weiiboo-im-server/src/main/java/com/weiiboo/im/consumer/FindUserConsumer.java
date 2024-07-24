@@ -16,6 +16,8 @@ import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
 @Component
 @Slf4j
 @RocketMQMessageListener(
@@ -24,11 +26,8 @@ import org.springframework.stereotype.Component;
         messageModel = MessageModel.BROADCASTING)
 public class FindUserConsumer implements RocketMQListener<MessageExt> {
 
-    private final BloomFilterUtils bloomFilterUtils;
-
-    public FindUserConsumer(BloomFilterUtils bloomFilterUtils) {
-        this.bloomFilterUtils = bloomFilterUtils;
-    }
+    @Resource
+    private BloomFilterUtils bloomFilterUtils;
 
     @Override
     public void onMessage(MessageExt messageExt) {

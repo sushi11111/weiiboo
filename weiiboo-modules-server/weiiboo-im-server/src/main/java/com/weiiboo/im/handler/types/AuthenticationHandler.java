@@ -14,17 +14,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.Map;
 
 @Component
 @Slf4j
 public class AuthenticationHandler {
 
-    private final RedisCache redisCache;
-
-    public AuthenticationHandler(RedisCache redisCache) {
-        this.redisCache = redisCache;
-    }
+    @Resource
+    private RedisCache redisCache;
 
     public void execute(ChannelHandlerContext channelHandlerContext, MessageVO message) {
         String token = message.getContent();
@@ -44,7 +42,6 @@ public class AuthenticationHandler {
         if (map == null
                 || !StringUtils.hasText(String.valueOf(map.get("userId")))
                 || !String.valueOf(map.get("userId")).equals(message.getFrom())) {
-            // token不合法
             log.error("token不合法");
             String content = ExceptionMsgEnum.ACCOUNT_OPERATION_ERROR.getMsg();
             replyMessage(channelHandlerContext.channel(), content, message.getFrom());
@@ -54,7 +51,6 @@ public class AuthenticationHandler {
                 RedisKey.build(RedisConstant.REDIS_KEY_USER_LOGIN_EXPIRE,
                         String.valueOf(map.get("userId"))));
         if (expire == null || expire < System.currentTimeMillis()) {
-            // token过期
             log.warn("token过期");
             String content = ExceptionMsgEnum.TOKEN_EXPIRED.getMsg();
             replyMessage(channelHandlerContext.channel(), content, message.getFrom());
@@ -62,7 +58,6 @@ public class AuthenticationHandler {
         String currentToken = (String) redisCache.hget(RedisKey.build(RedisConstant.REDIS_KEY_USER_LOGIN_INFO, String.valueOf(map.get("userId"))),
                 "token");
         if (!token.equals(currentToken)) {
-            // 告知用户，您的账号在其他地方登录或者登录信息已过期
             log.warn("您的账号在其他地方登录或者登录信息已过期");
             String content = ExceptionMsgEnum.ACCOUNT_OTHER_LOGIN.getMsg();
             replyMessage(channelHandlerContext.channel(), content, message.getFrom());

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: weiibooim-server
+    name: weiiboo-im-server
   profiles:
     active: dev
   cloud:

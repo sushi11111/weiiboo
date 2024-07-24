@@ -19,6 +19,7 @@ import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -28,23 +29,16 @@ import static com.weiiboo.im.handler.IMServerHandler.USER_CHANNEL_MAP;
 @Component
 @Slf4j
 public class ChatHandler {
-    private final RedisCache redisCache;
-    private final RocketMQTemplate rocketMQTemplate;
-    private final MongoTemplate mongoTemplate;
-    private final Executor asyncThreadExecutor;
-    private final UserFeign userFeign;
-
-    public ChatHandler(RedisCache redisCache,
-                       RocketMQTemplate rocketMQTemplate,
-                       MongoTemplate mongoTemplate,
-                       Executor asyncThreadExecutor,
-                       UserFeign userFeign) {
-        this.redisCache = redisCache;
-        this.rocketMQTemplate = rocketMQTemplate;
-        this.mongoTemplate = mongoTemplate;
-        this.asyncThreadExecutor = asyncThreadExecutor;
-        this.userFeign = userFeign;
-    }
+    @Resource
+    private RedisCache redisCache;
+    @Resource
+    private RocketMQTemplate rocketMQTemplate;
+    @Resource
+    private MongoTemplate mongoTemplate;
+    @Resource(name = "asyncThreadExecutor")
+    private Executor asyncThreadExecutor;
+    @Resource
+    private UserFeign userFeign;
 
     public void execute(MessageVO messageVO) {
         if (messageVO.getFrom().equals(messageVO.getTo())) {
