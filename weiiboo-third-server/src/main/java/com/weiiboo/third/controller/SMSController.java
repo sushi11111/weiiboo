@@ -26,10 +26,10 @@ public class SMSController {
     @GetMapping("/sendBindPhoneSms")
     public Result<?> sendBindPhoneSms(String phoneNumber) {
         if(!FieldValidationUtil.phoneNumberNotNull(phoneNumber)){
-            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_IS_NULL);
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_IS_NULL.getMsg());
         }
         if(!FieldValidationUtil.isPhoneNumber(phoneNumber)){
-            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID);
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID.getMsg());
         }
         return aliyunSmsService.sendBindPhoneSms(phoneNumber);
     }
@@ -42,10 +42,10 @@ public class SMSController {
     @GetMapping("/sendResetPhoneSms")
     public Result<?> sendResetPhoneSms(String phoneNumber) {
         if(!FieldValidationUtil.phoneNumberNotNull(phoneNumber)){
-            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_IS_NULL);
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_IS_NULL.getMsg());
         }
         if(!FieldValidationUtil.isPhoneNumber(phoneNumber)){
-            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID);
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID.getMsg());
         }
         return aliyunSmsService.sendResetPhoneSms(phoneNumber);
     }
@@ -58,13 +58,30 @@ public class SMSController {
     @GetMapping("/sendRegisterPhoneSms")
     public Result<?> sendRegisterPhoneSms(String phoneNumber) {
         if(!FieldValidationUtil.phoneNumberNotNull(phoneNumber)){
-            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_IS_NULL);
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_IS_NULL.getMsg());
         }
         if(!FieldValidationUtil.isPhoneNumber(phoneNumber)){
-            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID);
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID.getMsg());
         }
         return aliyunSmsService.sendRegisterPhoneSms(phoneNumber);
     }
+
+    /**
+     * 发送重置密码手机号验证码
+     * @param phoneNumber 手机号
+     * @return 发送结果
+     */
+    @GetMapping("/sendRegisterPhoneSms")
+    public Result<?> sendResetPasswordPhoneSms(String phoneNumber) {
+        if(!FieldValidationUtil.phoneNumberNotNull(phoneNumber)){
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_IS_NULL.getMsg());
+        }
+        if(!FieldValidationUtil.isPhoneNumber(phoneNumber)){
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID.getMsg());
+        }
+        return aliyunSmsService.sendResetPasswordPhoneSms(phoneNumber);
+    }
+
 
     /**
      * 验证绑定手机号短信验证码
@@ -90,13 +107,13 @@ public class SMSController {
     }
 
     /**
-     * 验证重置密码(换绑手机)短信验证码
+     * 验证重置密码短信验证码
      * @param phoneNumber 手机号
      * @param smsCode 短信验证码
      * @return 验证结果
      */
-    @PostMapping("/checkResetSmsCode")
-    public Result<Boolean> checkResetSmsCode(String phoneNumber, String smsCode) {
+    @PostMapping("/checkResetPasswordSmsCode")
+    public Result<Boolean> checkResetPasswordSmsCode(String phoneNumber, String smsCode) {
         if(!FieldValidationUtil.phoneNumberNotNull(phoneNumber)){
             return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_IS_NULL.getMsg());
         }
@@ -109,6 +126,29 @@ public class SMSController {
         if(!FieldValidationUtil.isSmsCode(smsCode)){
             return ResultUtil.errorPost(ExceptionMsgEnum.SMS_CODE_INVALID.getMsg());
         }
-        return aliyunSmsService.checkResetSmsCode(phoneNumber, smsCode);
+        return aliyunSmsService.checkResetPasswordSmsCode(phoneNumber, smsCode);
+    }
+
+    /**
+     * 验证换绑手机短信验证码
+     * @param phoneNumber 手机号
+     * @param smsCode 短信验证码
+     * @return 验证结果
+     */
+    @PostMapping("/checkResetBindSmsCode")
+    public Result<Boolean> checkResetBindSmsCode(String phoneNumber, String smsCode) {
+        if(!FieldValidationUtil.phoneNumberNotNull(phoneNumber)){
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_IS_NULL.getMsg());
+        }
+        if(!FieldValidationUtil.isPhoneNumber(phoneNumber)){
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID.getMsg());
+        }
+        if(!FieldValidationUtil.smsCodeNotNull(smsCode)){
+            return ResultUtil.errorPost(ExceptionMsgEnum.SMS_CODE_IS_NULL.getMsg());
+        }
+        if(!FieldValidationUtil.isSmsCode(smsCode)){
+            return ResultUtil.errorPost(ExceptionMsgEnum.SMS_CODE_INVALID.getMsg());
+        }
+        return aliyunSmsService.checkResetBindSmsCode(phoneNumber, smsCode);
     }
 }

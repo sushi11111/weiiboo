@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 public class NotesAddEsConsumer implements RocketMQListener<String> {
     @Resource
     private NotesSearchService notesSearchService;
+
     @Override
     public void onMessage(String message) {
         log.info("{}收到消息: {}",RocketMQTopicConstant.NOTES_ADD_ES_TOPIC,message);

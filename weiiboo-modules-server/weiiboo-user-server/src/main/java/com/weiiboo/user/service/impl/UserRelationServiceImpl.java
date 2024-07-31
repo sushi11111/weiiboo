@@ -45,7 +45,7 @@ public class UserRelationServiceImpl implements UserRelationService {
             return ResultUtil.errorPost("不能关注自己");
         }
         UserAttentionDO userAttentionDO = userAttentionMapper.getExist(userId,targetUserId);
-        // 已经关注过了
+        // 关注过了
         if(Objects.nonNull(userAttentionDO)){
             // 取消关注
             userAttentionMapper.deleteById(userAttentionDO.getId());
@@ -160,7 +160,7 @@ public class UserRelationServiceImpl implements UserRelationService {
         }
         UserAttentionDO userAttentionDO = userAttentionMapper.getExist(userId,targetUserId);
         if(Objects.isNull(userAttentionDO)){
-            return ResultUtil.errorPost("该用户不存在");
+            return ResultUtil.errorPost("用户未关注");
         }
         userAttentionDO.setRemarkName(remarkName);
         userAttentionMapper.updateById(userAttentionDO);

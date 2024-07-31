@@ -45,7 +45,7 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
                 .setTemplateCode("SMS_154950909")
                 .setPhoneNumbers(phoneNumber)
                 .setTemplateParam("{\"code\":\"" + smsCode + "\"}");
-        return sendSms(sendSmsRequest, phoneNumber, smsCode,RedisConstant.REDIS_KEY_SMS_RESET_PASSWORD_PHONE_CODE);
+        return sendSms(sendSmsRequest, phoneNumber, smsCode,RedisConstant.REDIS_KEY_SMS_RESET_PHONENUMBER_PHONE_CODE);
     }
 
     @Override
@@ -61,15 +61,33 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
     }
 
     @Override
-    public Result<Boolean> checkResetSmsCode(String phoneNumber, String smsCode) {
+    public Result<?> sendResetPasswordPhoneSms(String phoneNumber) {
+        String smsCode = CodeUtil.createSmsCode();
+        // TODO:暂时使用一样的短信模板
+        SendSmsRequest sendSmsRequest = new SendSmsRequest()
+                .setSignName("阿里云短信测试")
+                .setTemplateCode("SMS_154950909")
+                .setPhoneNumbers(phoneNumber)
+                .setTemplateParam("{\"code\":\"" + smsCode + "\"}");
+        return sendSms(sendSmsRequest, phoneNumber, smsCode,RedisConstant.REDIS_KEY_SMS_RESET_PASSWORD_PHONE_CODE);
+    }
+
+    @Override
+    public Result<Boolean> checkResetPasswordSmsCode(String phoneNumber, String smsCode) {
         String redisKey = RedisKey.build(RedisConstant.REDIS_KEY_SMS_RESET_PASSWORD_PHONE_CODE, phoneNumber);
-        return ResultUtil.successPost("验证短信验证码成功", smsCode.equals(redisCache.get(redisKey)));
+        return ResultUtil.successPost("验证重置密码短信验证码成功完成", smsCode.equals(redisCache.get(redisKey)));
     }
 
     @Override
     public Result<Boolean> checkBindSmsCode(String phoneNumber, String smsCode) {
         String redisKey = RedisKey.build(RedisConstant.REDIS_KEY_SMS_BIND_PHONE_CODE, phoneNumber);
-        return ResultUtil.successPost("验证短信验证码成功", smsCode.equals(redisCache.get(redisKey)));
+        return ResultUtil.successPost("验证短信验证码完成", smsCode.equals(redisCache.get(redisKey)));
+    }
+
+    @Override
+    public Result<Boolean> checkResetBindSmsCode(String phoneNumber, String smsCode) {
+        String redisKey = RedisKey.build(RedisConstant.REDIS_KEY_SMS_RESET_PHONENUMBER_PHONE_CODE, phoneNumber);
+        return ResultUtil.successPost("验证换绑短信验证码成功完成", smsCode.equals(redisCache.get(redisKey)));
     }
 
     /**

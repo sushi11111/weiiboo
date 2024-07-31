@@ -7,12 +7,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-
-/**
- * @author hhh
- * @date 2024-3-17
- * @desc 不需要token的路径
- */
 @Data
 @Component
 @ConfigurationProperties(prefix = "release.auth")

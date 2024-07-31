@@ -9,7 +9,12 @@ public interface AliyunSmsService {
 
     Result<?> sendRegisterPhoneSms(String phoneNumber);
 
-    Result<Boolean> checkResetSmsCode(String phoneNumber, String smsCode);
+    Result<?> sendResetPasswordPhoneSms(String phoneNumber);
+
+    Result<Boolean> checkResetPasswordSmsCode(String phoneNumber, String smsCode);
 
     Result<Boolean> checkBindSmsCode(String phoneNumber, String smsCode);
+
+    Result<Boolean> checkResetBindSmsCode(String phoneNumber, String smsCode);
+
 }

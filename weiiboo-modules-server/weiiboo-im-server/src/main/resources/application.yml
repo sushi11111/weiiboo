@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: 8084
 
 spring:
   profiles:
@@ -28,15 +28,9 @@ spring:
       port: 27017                # MongoDB 端口号
       database: weiiboo   # MongoDB 数据库名称
 
-  # ES配置
-  elasticsearch:
-    uris: http://localhost:9200
-    init:
-      key: 666666
-
   # nacos配置
   application:
-    name: weiboo-note-server
+    name: weiboo-im-server
   cloud:
     nacos:
       discovery:
@@ -53,12 +47,6 @@ mybatis-plus:
     db-config:
       logic-delete-field: isDeleted  #全局逻辑删除
       id-type: auto #主键策略自增长
-
-# 百度ai配置
-baiduyun:
-  ai:
-    apiKey: cYJvUEQ87J4KmQcVEBB6qdBV
-    secretKey: ED4mdJBT8bpFQQ06mKi9kBDgCDiWbgGv
 
 # rocketmq配置
 rocketmq:

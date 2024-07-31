@@ -113,11 +113,9 @@ public class NotesServiceImpl extends ServiceImpl<NotesMapper, NotesDO>
             log.error("获取省份失败", e);
             notesDO.setProvince("未知");
         }
-        // 保存笔记
         this.baseMapper.insert(notesDO);
         // 将笔记id添加到布隆过滤器中
         bloomFilterUtils.addBloomFilter(BloomFilterMap.NOTES_ID_BLOOM_FILTER, notesDO.getId().toString());
-        //利用rocketMQ异步将笔记保存到ES中
         rocketMQTemplate.asyncSend(RocketMQTopicConstant.NOTES_ADD_ES_TOPIC, JSON.toJSONString(notesDO), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
@@ -150,7 +148,6 @@ public class NotesServiceImpl extends ServiceImpl<NotesMapper, NotesDO>
         // 找到所有的"@人"，并提取出人的id，发送通知
         List<Long> userIds = findUserId(notePublishVO);
         log.info("userIds:{}", userIds);
-        // TODO 利用rocketMQ异步发送通知
         userIds.forEach(userId -> {
             Map<String, Object> map = new HashMap<>();
             map.put("belongUserId", notePublishVO.getBelongUserid().toString());
@@ -433,7 +430,6 @@ public class NotesServiceImpl extends ServiceImpl<NotesMapper, NotesDO>
 
     @Override
     public Result<NotesPageVO> getLastNotesByPage(Integer page, Integer pageSize) {
-        // 缓存中获取
         String notesJson = (String) redisCache.get(RedisKey.build(
                 RedisConstant.REDIS_KEY_NOTES_LAST_PAGE, pageSize + "_" + page));
         List<NotesDO> notes;
@@ -981,7 +977,7 @@ public class NotesServiceImpl extends ServiceImpl<NotesMapper, NotesDO>
         }
         redisCache.hset(RedisKey.build(RedisConstant.REDIS_KEY_NOTES_COUNT, notesId.toString()), "notesLikeNum", notesDO.getNotesLikeNum());
         if (userLikeNotesList.isEmpty()) {
-            return ResultUtil.successPost(null);
+                return ResultUtil.successPost(null);
         }
         // 将所有点赞的用户id存储到redis中，利用redis的set集合去重
         userLikeNotesList.forEach(userLikeNotesDO -> {

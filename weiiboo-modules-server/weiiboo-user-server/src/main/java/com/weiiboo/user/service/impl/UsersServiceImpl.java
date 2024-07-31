@@ -42,13 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.weiiboo.common.constant.RocketMQTopicConstant.USER_ADD_ES_TOPIC;
 
-/**
-* @author subscriber
-* @description 针对表【users】的数据库操作Service实现
-* @createDate 2024-03-03 16:47:03
-*/
 @Service
 @Slf4j
 public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
@@ -68,7 +62,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
     private RocketMQTemplate rocketMQTemplate;
 
     /**
-     * 用户注册
+     * 用户手机号登录
      *
      * @param phoneNumber 用户手机号
      * @param password 用户密码
@@ -81,7 +75,6 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
         queryWrapper.lambda().eq(UserDO::getPhoneNumber,phoneNumber).eq(UserDO::getPassword,SHA256Password);
         log.info(SHA256Password);
         UserDO userDO = this.getOne(queryWrapper);
-        // 查询不到该用户
         if(Objects.isNull(userDO)){
             throw new BusinessException(ExceptionMsgEnum.PASSWORD_ERROR);
         }
@@ -96,7 +89,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
      */
     @Override
     public Result<?> register(RegisterInfoVO registerInfoVO) {
-        // 检验验证码是否正确
+        // 校验验证码
         boolean b = checkSmsCode(
                 RedisKey.build(RedisConstant.REDIS_KEY_SMS_REGISTER_PHONE_CODE, registerInfoVO.getPhoneNumber()),
                 registerInfoVO.getSmsCode());
@@ -110,21 +103,20 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
         if(Objects.nonNull(userDO)){
             throw new BusinessException(ExceptionMsgEnum.PHONE_NUMBER_ALREADY_REGISTER);
         }
-        // 进行账号初始化
+        // 账号初始化
         UserDO newUserDO = initAccount(registerInfoVO);
         try{
             // 保存到mysql
             this.save(newUserDO);
-            // 保存到ES
-            rocketMQTemplate.asyncSend(USER_ADD_ES_TOPIC, JSON.toJSONString(newUserDO),new SendCallback() {
+            rocketMQTemplate.asyncSend(RocketMQTopicConstant.USER_ADD_ES_TOPIC, JSON.toJSONString(newUserDO),new SendCallback() {
                 @Override
                 public void onSuccess(SendResult sendResult) {
-                    log.info("发送成功");
+                    log.info("注册用户信息发送成功");
                 }
 
                 @Override
                 public void onException(Throwable e) {
-                    log.error("发送失败",e);
+                    log.error("注册用户信息发送失败",e);
                 }
             });
         } catch (Exception e) {
@@ -141,12 +133,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
      */
     @Override
     public Result<?> logout(Long userId) {
-        // 检查userId与token是否匹配
-        Map<String,Object>token = JWTUtil.parseToken(request.getHeader("token"));
-        Long id = Long.valueOf(String.valueOf(token.get("userId")));
-        if(!id.equals(userId)){
-            throw new BusinessException(ExceptionMsgEnum.TOKEN_INVALID);
-        }
+        JWTUtil.isTokenUserIdMatch(request,userId);
         // 判断是否需要更新用户信息
         if(redisCache.sHasKey(RedisConstant.REDIS_KEY_USER_INFO_UPDATE_LIST,userId)){
             Map<String, Object> map = redisCache.hmget(
@@ -182,7 +169,6 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
     @Override
     public Result<UserVO> getUserInfo(Long userId) {
         log.info("getUserInfo： {}",userId);
-        // userId为空
         if(Objects.isNull(userId)){
             throw  new BusinessException(ExceptionMsgEnum.NOT_LOGIN);
         }
@@ -226,23 +212,21 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
      * @return 重置结果
      */
     @Override
-    public Result<?> resetPassword(String phoneNumber, String password, String smsCode) {
+    public Result<?> resetPasswordBySms(String phoneNumber, String password, String smsCode) {
         boolean b = checkSmsCode(RedisKey.build(RedisConstant.REDIS_KEY_SMS_RESET_PASSWORD_PHONE_CODE,
                 phoneNumber),smsCode);
-        // 验证码错误
         if(!b){
             throw new BusinessException(ExceptionMsgEnum.SMS_CODE_ERROR);
         }
         QueryWrapper<UserDO> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(UserDO::getPhoneNumber,phoneNumber);
         UserDO userDO = this.getOne(queryWrapper);
-        // 手机号未注册
         if(Objects.isNull(userDO)){
             throw new BusinessException(ExceptionMsgEnum.PHONE_NUMBER_NOT_REGISTER);
         }
         // 使用SHA256密码加密 通过手机号给密码加盐
-        String md5 = SHA256Utils.getSHA256(phoneNumber + password);
-        userDO.setPassword(md5);
+        String sha256 = SHA256Utils.getSHA256(phoneNumber + password);
+        userDO.setPassword(sha256);
         try{
             this.updateById(userDO);
         }catch (Exception e){
@@ -320,12 +304,12 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
     public Result<Boolean> updatePhoneNumber(String phoneNumber, String newPhoneNumber,String smsCode) {
         Long userId = JWTUtil.getCurrentUserId(request.getHeader("token"));
         boolean b = checkSmsCode(
-                RedisKey.build(RedisConstant.REDIS_KEY_SMS_BIND_PHONE_CODE,phoneNumber),smsCode);
+                RedisKey.build(RedisConstant.REDIS_KEY_SMS_RESET_PHONENUMBER_PHONE_CODE,phoneNumber),smsCode);
         if(!b){
             throw new BusinessException(ExceptionMsgEnum.SMS_CODE_ERROR);
         }
         QueryWrapper<UserDO>queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(UserDO::getPhoneNumber,phoneNumber);
+        queryWrapper.lambda().eq(UserDO::getPhoneNumber,newPhoneNumber);
         UserDO userDO = this.getOne(queryWrapper);
         if (Objects.nonNull(userDO)) {
             throw new BusinessException(ExceptionMsgEnum.PHONE_NUMBER_EXIST);
@@ -346,12 +330,12 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
         }
         Long userId = JWTUtil.getCurrentUserId(request.getHeader("token"));
         UserDO userDO = this.getById(userId);
-        String md5 = SHA256Utils.getSHA256(passwordVO.getOldPassword());
-        if(!md5.equals(userDO.getPassword())){
+        String oldSha256 = SHA256Utils.getSHA256(passwordVO.getOldPassword());
+        if(!oldSha256.equals(userDO.getPassword())){
             throw new BusinessException((ExceptionMsgEnum.PASSWORD_ERROR));
         }
-        String md5New = SHA256Utils.getSHA256(passwordVO.getNewPassword());
-        userDO.setPassword(md5New);
+        String newSha256 = SHA256Utils.getSHA256(passwordVO.getNewPassword());
+        userDO.setPassword(newSha256);
         try{
             this.updateById(userDO);
         }catch (Exception e){
@@ -362,22 +346,21 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
 
     @Override
     public Result<?> updateAvatarUrl(UserVO userVO) {
+        JWTUtil.isTokenUserIdMatch(request,userVO.getId());
         checkField(userVO.getId(),userVO.getAvatarUrl());
-        // 更新redis中info信息
         redisCache.hset(
                 RedisKey.build(RedisConstant.REDIS_KEY_USER_LOGIN_INFO, String.valueOf(userVO.getId())),
                 "avatarUrl",
                 userVO.getAvatarUrl());
-        // 更新es
         rocketMQTemplate.asyncSend(RocketMQTopicConstant.USER_UPDATE_ES_TOPIC, JSON.toJSONString(userVO), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                log.info("发送成功");
+                log.info("修改头像消息发送成功");
             }
 
             @Override
             public void onException(Throwable e) {
-                log.info("发送失败");
+                log.info("修改头像消息发送失败");
             }
         });
         redisCache.sSet(RedisConstant.REDIS_KEY_USER_INFO_UPDATE_LIST,userVO.getId());
@@ -386,17 +369,19 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
 
     @Override
     public Result<?> updateBackgroundImage(UserVO userVO) {
+        JWTUtil.isTokenUserIdMatch(request,userVO.getId());
         checkField(userVO.getId(),userVO.getHomePageBackground());
         redisCache.hset(
                 RedisKey.build(RedisConstant.REDIS_KEY_USER_LOGIN_INFO, String.valueOf(userVO.getId())),
-                "avatarUrl",
-                userVO.getAvatarUrl());
+                "homePageBackground",
+                userVO.getHomePageBackground());
         redisCache.sSet(RedisConstant.REDIS_KEY_USER_INFO_UPDATE_LIST,userVO.getId());
         return ResultUtil.successPost("修改背景图成功",null);
     }
 
     @Override
     public Result<?> updateNickname(UserVO userVO) {
+        JWTUtil.isTokenUserIdMatch(request,userVO.getId());
         checkField(userVO.getId(),userVO.getNickname());
         if (userVO.getNickname().length() > 12 || userVO.getNickname().length() < 2) {
             return ResultUtil.errorPost("昵称长度为2-12位");
@@ -410,11 +395,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
         rocketMQTemplate.asyncSend(RocketMQTopicConstant.USER_UPDATE_ES_TOPIC, JSON.toJSONString(userVO),new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                log.info("发送成功");
+                log.info("修改昵称消息发送成功");
             }
             @Override
             public void onException(Throwable e) {
-                log.error("发送失败",e);
+                log.error("修改昵称消息发送失败",e);
             }
         });
         return ResultUtil.successPost("修改昵称成功", null);
@@ -422,6 +407,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
 
     @Override
     public Result<?> updateIntroduction(UserVO userVO) {
+        JWTUtil.isTokenUserIdMatch(request,userVO.getId());
         checkField(userVO.getId(),userVO.getSelfIntroduction());
         if(userVO.getSelfIntroduction().length() > 100){
             return ResultUtil.errorPost("简介长度不能超过100");
@@ -437,6 +423,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
 
     @Override
     public Result<?> updateSex(UserVO userVO) {
+        JWTUtil.isTokenUserIdMatch(request,userVO.getId());
         checkField(userVO.getId(),String.valueOf(userVO.getSex()));
         if (userVO.getSex() < 0 || userVO.getSex() > 1) {
             throw new BusinessException(ExceptionMsgEnum.PARAMETER_ERROR);
@@ -452,6 +439,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
 
     @Override
     public Result<Integer> updateBirthday(UserVO userVO) {
+        JWTUtil.isTokenUserIdMatch(request,userVO.getId());
         checkField(userVO.getId(),userVO.getBirthday());
         Date date = Date.valueOf(userVO.getBirthday());
         // 判断生日是否合法，不能大于当前时间
@@ -477,22 +465,12 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
 
     @Override
     public Result<?> updateArea(UserVO userVO) {
+        JWTUtil.isTokenUserIdMatch(request,userVO.getId());
         checkField(userVO.getId(),userVO.getArea());
-        // 判断地区是否合法，如果不合法则抛出异常，格式为：省 市 区
-        String[] split = userVO.getArea().split(" ");
-        if (split.length != 3) {
-            throw new BusinessException(ExceptionMsgEnum.PARAMETER_ERROR);
-        }
-        String area;
-        if (split[0].equals(split[1])) {
-            area = split[0] + " " + split[2];
-        } else {
-            area = userVO.getArea();
-        }
         redisCache.hset(
                 RedisKey.build(RedisConstant.REDIS_KEY_USER_LOGIN_INFO, String.valueOf(userVO.getId())),
                 "area",
-                area
+                userVO.getArea()
         );
         redisCache.sSet(RedisConstant.REDIS_KEY_USER_INFO_UPDATE_LIST, userVO.getId());
         return ResultUtil.successPost("修改地区成功", null);
@@ -527,12 +505,10 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
         // 查询缓存
         boolean flag = redisCache.hasKey(RedisConstant.REDIS_KEY_USER_LOGIN_INFO + userDO.getId());
         UserVO userVO;
-        // 缓存存在
         if(flag){
             Map<String,Object> map= redisCache.hmget(RedisConstant.REDIS_KEY_USER_LOGIN_INFO + userDO.getId());
             userVO = new UserVO(map);
         }
-        // 缓存中不存在
         else {
             userVO = new UserVO();
             BeanUtils.copyProperties(userDO,userVO);
@@ -541,11 +517,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
             }
             Integer attentionNum = userAttentionMapper.getCountById(userDO.getId());
             Integer fansNum = userFansMapper.getCountById(userDO.getId());
-            if(attentionNum==null){
-                attentionNum=0;
+            if(attentionNum == null){
+                attentionNum = 0;
             }
-            if(fansNum==null){
-                fansNum=0;
+            if(fansNum == null){
+                fansNum = 0;
             }
             userVO.setAttentionNum(attentionNum);
             userVO.setFansNum(fansNum);
@@ -602,13 +578,10 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, UserDO>
         UserDO userDO = new UserDO();
         userDO.setPhoneNumber(registerInfoVO.getPhoneNumber());
         userDO.setPassword(SHA256Utils.getSHA256(registerInfoVO.getPassword()));
-        // 设置默认头像和昵称
         userDO.setAvatarUrl(BaseConstant.DEFAULT_AVATAR_URL);
         userDO.setNickname(BaseConstant.DEFAULT_NICKNAME_PREFIX + CodeUtil.createNickname());
-        // 创建一个uid
         String uid = CodeUtil.createUid(registerInfoVO.getPhoneNumber());
         userDO.setUid(uid);
-        // 设置默认性别
         userDO.setSex(2);
         userDO.setHomePageBackground(BaseConstant.DEFAULT_HOME_PAGE_BACKGROUD);
         return userDO;

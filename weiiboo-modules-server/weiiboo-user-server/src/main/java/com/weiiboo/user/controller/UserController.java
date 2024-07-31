@@ -4,6 +4,7 @@ package com.weiiboo.user.controller;
 import com.weiiboo.common.Utils.FieldValidationUtil;
 import com.weiiboo.common.Utils.ResultUtil;
 import com.weiiboo.common.domin.Result;
+import com.weiiboo.common.myEnum.ExceptionMsgEnum;
 import com.weiiboo.common.redis.constant.BloomFilterMap;
 import com.weiiboo.common.web.aop.bloomFilter.BloomFilterProcessing;
 import com.weiiboo.common.web.aop.idempotent.Idempotent;
@@ -36,25 +37,25 @@ public class UserController {
     }
 
     /**
-     * 重置密码
+     * 通过手机验证码重置密码
      * @param phoneNumber 手机号
      * @param password 密码
      * @param smsCode 短信验证码
      * @return 重置结果
      */
     @PostMapping("/resetPassword")
-    @Idempotent(value = "/user/resetPassword",expireTime = 60000)
-    public Result<?>resetPassword(String phoneNumber,String password,String smsCode){
+    @Idempotent(value = "/user/resetPasswordBySms",expireTime = 60000)
+    public Result<?>resetPasswordBySms(String phoneNumber,String password,String smsCode){
         if(!FieldValidationUtil.isPhoneNumber(phoneNumber)){
-            return ResultUtil.errorPost("手机号格式不正确");
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID.getMsg());
         }
-        if(!FieldValidationUtil.isPhoneNumber(password)){
-            return ResultUtil.errorPost("密码必须包含数字和字母，长度为6-16位");
+        if(!FieldValidationUtil.isPassword(password)){
+            return ResultUtil.errorPost(ExceptionMsgEnum.PASSWORD_INVALID.getMsg());
         }
         if(!FieldValidationUtil.isSmsCode(smsCode)){
-            return ResultUtil.errorPost("验证码格式不正确");
+            return ResultUtil.errorPost(ExceptionMsgEnum.SMS_CODE_INVALID.getMsg());
         }
-        return usersService.resetPassword(phoneNumber,password,smsCode);
+        return usersService.resetPasswordBySms(phoneNumber,password,smsCode);
     }
 
     /**
@@ -160,10 +161,10 @@ public class UserController {
     @Idempotent(value = "/user/updatePhoneNumber",expireTime = 60000)
     public Result<Boolean> updatePhoneNumber(String phoneNumber,String newPhoneNumber,String smsCode){
         if(!FieldValidationUtil.isPhoneNumber(phoneNumber)){
-            return ResultUtil.errorPost("手机号格式不正确");
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID.getMsg());
         }
         if(!FieldValidationUtil.isSmsCode(smsCode)){
-            return ResultUtil.errorPost("验证码格式不正确");
+            return ResultUtil.errorPost(ExceptionMsgEnum.SMS_CODE_INVALID.getMsg());
         }
         return usersService.updatePhoneNumber(phoneNumber,newPhoneNumber,smsCode);
     }

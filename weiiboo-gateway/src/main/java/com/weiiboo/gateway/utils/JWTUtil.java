@@ -16,6 +16,7 @@ public class JWTUtil {
     private void setJwtProperties(JwtProperties jwtProperties) {
         JWTUtil.jwtProperties = jwtProperties;
     }
+
     //生成令牌
     public static String createToken(Map<String,Object> claims){
         return Jwts.builder()

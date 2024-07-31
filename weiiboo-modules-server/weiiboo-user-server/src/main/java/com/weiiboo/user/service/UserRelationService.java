@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface UserRelationService {
     Result<Boolean> attention(Long userId, Long targetUserId);
+
     Result<Boolean> selectOneByUserIdAndAttentionIdIsExist(Long toId, Long fromId);
 
     Result<Boolean> selectOneByUserIdAndBlackIdIsExist(Long toId, Long fromId);

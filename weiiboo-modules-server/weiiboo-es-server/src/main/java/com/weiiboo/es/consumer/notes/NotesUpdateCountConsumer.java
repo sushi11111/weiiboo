@@ -9,6 +9,7 @@ import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Map;
 
 @Component
@@ -16,11 +17,8 @@ import java.util.Map;
 @RocketMQMessageListener(topic = RocketMQTopicConstant.NOTES_UPDATE_COUNT_TOPIC,
         consumerGroup = RocketMQConsumerGroupConstant.NOTES_UPDATE_COUNT_CONSUMER_GROUP)
 public class NotesUpdateCountConsumer implements RocketMQListener<String> {
-    private final NotesSearchService notesSearchService;
-
-    public NotesUpdateCountConsumer(NotesSearchService notesSearchService) {
-        this.notesSearchService = notesSearchService;
-    }
+    @Resource
+    private NotesSearchService notesSearchService;
 
     @Override
     public void onMessage(String message) {

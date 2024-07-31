@@ -1,15 +1,21 @@
 package com.weiiboo.note.service.impl;
 
 
+import com.alibaba.fastjson.JSON;
 import com.mongodb.client.result.DeleteResult;
 import com.weiiboo.common.Utils.ResultUtil;
 import com.weiiboo.common.constant.BaseConstant;
+import com.weiiboo.common.constant.RocketMQTopicConstant;
 import com.weiiboo.common.redis.constant.RedisConstant;
 import com.weiiboo.common.redis.utils.RedisCache;
 import com.weiiboo.common.redis.utils.RedisKey;
 import com.weiiboo.common.web.utils.JWTUtil;
 import com.weiiboo.note.feign.UserFeign;
 import com.weiiboo.note.service.NotesService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -27,18 +33,11 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
-/**
-* @author subscriber
-* @description 针对表【comments】的数据库操作Service实现
-* @createDate 2024-03-23 20:58:17
-*/
+@Slf4j
 @Service
 public class CommentsServiceImpl implements CommentsService {
     @Resource
@@ -53,10 +52,11 @@ public class CommentsServiceImpl implements CommentsService {
     private Executor asyncThreadExecutor;
     @Resource
     private NotesService notesService;
+    @Resource
+    private RocketMQTemplate rocketMQTemplate;
 
     @Override
     public Result<CommentVO> publishComment(CommentDO commentDO) {
-        // 进行初始化
         commentDO.setCommentLikeNum(0);
         commentDO.setIsHot(false);
         commentDO.setIsTop(false);
@@ -114,11 +114,48 @@ public class CommentsServiceImpl implements CommentsService {
             redisCache.setRemove(key, userId);
             redisCache.decr(count, 1);
         } else {
-            // 设置过期时间为7天，7天后自动删除，评论点赞集合并没有什么价值，不把它放到数据库中，用户一般不会回头看自己的评论点赞记录
             redisCache.sSetAndTime(key, 60 * 60 * 24 * 7, userId);
             redisCache.incr(count, 1);
         }
         // TODO rocketMQ异步通知targetUserId用户
+        Map<String,Object> messageMap = new HashMap<>();
+        String nickname = (String) redisCache.hget(RedisKey.build(RedisConstant.REDIS_KEY_USER_LOGIN_INFO,userId.toString()),"nickname");
+        String avatarUrl = (String) redisCache.hget(RedisKey.build(RedisConstant.REDIS_KEY_USER_LOGIN_INFO, userId.toString()), "avatarUrl");
+        if (!StringUtils.hasText(avatarUrl) || !StringUtils.hasText(nickname)) {
+            Result<?> result = userFeign.getUserInfo(userId);
+            if (result.getCode() == 20010) {
+                Map<String, Object> userInfo = (Map<String, Object>) result.getData();
+                if (!StringUtils.hasText(nickname)) {
+                    nickname = (String) userInfo.get("nickname");
+                }
+                if (!StringUtils.hasText(avatarUrl)) {
+                    avatarUrl = (String) userInfo.get("avatarUrl");
+                }
+            }
+        }
+        Map<String, String> contentMap = new HashMap<>();
+        contentMap.put("text", "点赞了你的评论");
+        contentMap.put("commentId", commentId.toString());
+        messageMap.put("from", userId);
+        messageMap.put("fromName", nickname);
+        messageMap.put("fromAvatar", avatarUrl);
+        messageMap.put("to", targetUserId);
+        messageMap.put("time", System.currentTimeMillis());
+        messageMap.put("messageType", 8);
+        messageMap.put("chatType", 0);
+        messageMap.put("friendType", 1);
+        messageMap.put("content", JSON.toJSONString(contentMap));
+        rocketMQTemplate.asyncSend(RocketMQTopicConstant.PRAISE_AND_COLLECT_REMIND_TOPIC, JSON.toJSONString(messageMap), new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                log.info("发送点赞通知成功");
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                log.error("发送点赞通知失败", throwable);
+            }
+        });
         return ResultUtil.successPost(true);
     }
 

@@ -6,9 +6,9 @@
 
     <resultMap id="BaseResultMap" type="com.weiiboo.modules.api.user.domin.UserBlackDO">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="userId" column="userId" jdbcType="INTEGER"/>
-            <result property="blackId" column="blackId" jdbcType="INTEGER"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="userId" column="user_id" jdbcType="INTEGER"/>
+            <result property="blackId" column="black_id" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -23,8 +23,8 @@
         FROM
             user_black_list
         WHERE
-            userId = #{userId}
-          AND blackId = #{targetUserId}]]>
+            user_id = #{toId}
+          AND black_id = #{fromId}]]>
     </select>
 
     <select id="selectBlackList" resultType="com.weiiboo.modules.api.user.vo.UserBlackVO">
@@ -32,7 +32,7 @@
                u.avatar_url AS avatarUrl,
                u.nickname AS nickname
         FROM user_black_list AS ub
-            LEFT JOIN users AS u ON ub.blackId = u.id
-        ORDER BY ub.createTime DESC
+            LEFT JOIN users AS u ON ub.black_id = u.id
+        ORDER BY ub.create_time DESC
     </select>
 </mapper>

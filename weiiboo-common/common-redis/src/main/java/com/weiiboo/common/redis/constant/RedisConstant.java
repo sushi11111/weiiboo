@@ -37,7 +37,10 @@ public class RedisConstant {
      * redis key 重置密码短信验证码前缀
      */
     public static final String REDIS_KEY_SMS_RESET_PASSWORD_PHONE_CODE = "sms:reset:password:phone:code:";
-
+    /**
+     * redis key 重置密码短信验证码前缀
+     */
+    public static final String REDIS_KEY_SMS_RESET_PHONENUMBER_PHONE_CODE = "sms:reset:phonenumber:phone:code:";
     /**
      * redis key 用户关系是否允许发送消息前缀
      */
@@ -94,12 +97,9 @@ public class RedisConstant {
     public static final String REDIS_KEY_NOTES_LAST_PAGE = "notes:last:page";
 
     /**
-     * redis key 分页查询通过分类id的笔记缓存前缀
+     * redis key 通过分类id分页查询的笔记缓存前缀
      */
     public static final String REDIS_KEY_NOTES_CATEGORY_PAGE = "notes:category:page";
-
-
-
 
 
     /**

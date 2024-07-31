@@ -22,7 +22,6 @@ public class NotesCategoryController {
      * @return 笔记类别列表
      */
     @GetMapping("/getNotesCategoryList")
-    @Operation(summary = "获取所有笔记类别")
     public Result<List<NotesCategoryDO>> getNotesCategory() {
         return notesCategoryService.getNotesCategory();
     }

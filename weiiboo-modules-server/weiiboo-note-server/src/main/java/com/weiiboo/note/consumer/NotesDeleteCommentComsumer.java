@@ -23,7 +23,7 @@ public class NotesDeleteCommentComsumer implements RocketMQListener<String> {
     @Resource
     private CommentsService commentsService;
     public void onMessage(String message){
-        log.info("{}收到消息：{}",RocketMQTopicConstant.NOTES_DELETE_COMMENT_TOPIC,message);
+        log.info("{}receive: {}",RocketMQTopicConstant.NOTES_DELETE_COMMENT_TOPIC,message);
         Long notesId = Long.valueOf(message);
         log.info("noteId:{}",notesId);
         commentsService.deleteAllCommentByNotesId(notesId);

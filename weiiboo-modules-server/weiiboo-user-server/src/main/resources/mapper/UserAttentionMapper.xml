@@ -30,10 +30,10 @@
                IF(ua.remark_name IS NULL, u.nickname, ua.remark_name) AS nickname,
                IF(ua2.user_id IS NOT NULL, TRUE, FALSE)               AS bidirectional
         FROM user_attention AS ua
-                 LEFT JOIN user AS u ON ua.attention_id = u.id
+                 LEFT JOIN users AS u ON ua.attention_id = u.id
                  LEFT JOIN user_attention AS ua2 ON ua2.user_id = u.id AND ua2.attention_id = #{userId}
         WHERE ua.user_id = #{userId}
-          AND u.account_status = 0
+          AND u.account_status = 1
         ORDER BY ua.create_time DESC
             LIMIT #{pageSize} OFFSET #{offset}
     </select>

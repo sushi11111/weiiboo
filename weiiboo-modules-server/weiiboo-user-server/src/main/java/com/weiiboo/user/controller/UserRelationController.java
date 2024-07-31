@@ -100,10 +100,10 @@ public class UserRelationController {
      * 关注或取消关注用户
      * @param userId 用户id
      * @param targetUserId 关注的用户id
-     * @return 是否关注成功
+     * @return 是否关注成功, expireTime = 600
      */
     @PostMapping("/attention")
-    @Idempotent(value = "/user/relation/attention", expireTime = 500)
+    @Idempotent(value = "/user/relation/attention")
     @BloomFilterProcessing(map= BloomFilterMap.USER_ID_BLOOM_FILTER,keys = {"#userId","#targetUserId"})
     public Result<Boolean> attention(Long userId, Long targetUserId) {
         return userRelationService.attention(userId,targetUserId);
@@ -117,7 +117,7 @@ public class UserRelationController {
      * @return 是否更新成功
      */
     @PostMapping("/updateRemarkName")
-    @Idempotent(value = "/user/relation/updateRemarkName", expireTime = 500)
+    @Idempotent(value = "/user/relation/updateRemarkName")
     @BloomFilterProcessing(map= BloomFilterMap.USER_ID_BLOOM_FILTER,keys = {"#userId","#targetUserId"})
     public Result<?> updateRemarkName(Long userId, Long targetUserId, String remarkName) {
         return userRelationService.updateRemarkName(userId,targetUserId,remarkName);

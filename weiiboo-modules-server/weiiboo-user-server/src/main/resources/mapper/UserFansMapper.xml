@@ -20,7 +20,7 @@
                  LEFT JOIN users AS u ON uf.fans_id = u.id
                  LEFT JOIN user_fans AS uf2 ON uf2.user_id = u.id AND uf2.fans_id = #{userId}
         WHERE uf.user_id = #{userId}
-          AND u.account_status = 0
+          AND u.account_status = 1
         ORDER BY uf.create_time DESC
         LIMIT #{pageSize} OFFSET #{offset}
     </select>

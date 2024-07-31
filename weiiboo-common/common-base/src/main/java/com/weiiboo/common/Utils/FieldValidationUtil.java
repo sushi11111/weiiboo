@@ -1,7 +1,5 @@
 package com.weiiboo.common.Utils;
 
-import org.springframework.util.StringUtils;
-
 public class FieldValidationUtil {
     /**
      * 判断手机号是否为空
@@ -9,7 +7,7 @@ public class FieldValidationUtil {
      * @return 手机号是否为空
      */
     public static boolean phoneNumberNotNull(String phoneNumber) {
-        return StringUtils.hasText(phoneNumber);
+        return phoneNumber != null && !phoneNumber.trim().isEmpty();
     }
 
     /**
@@ -36,7 +34,7 @@ public class FieldValidationUtil {
      * @return 是否为空
      */
     public static boolean smsCodeNotNull(String smsCode) {
-        return StringUtils.hasText(smsCode);
+        return smsCode != null && !smsCode.trim().isEmpty();
     }
 
     /**

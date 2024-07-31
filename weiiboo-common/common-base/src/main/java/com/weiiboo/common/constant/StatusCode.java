@@ -22,6 +22,10 @@ public class StatusCode {
     public static final Integer TOKEN_INVALID = 40330;
     //密码错误
     public static final Integer PASSWORD_ERROR = 40340;
+    // 密码格式错误
+    public static final Integer PASSWORD_INVALID = 40350;
+    //uid无效
+    public static final Integer UID_INVALID = 40360;
     //手机号已存在
     public static final Integer PHONE_NUMBER_EXIST = 10010;
     //手机号未注册

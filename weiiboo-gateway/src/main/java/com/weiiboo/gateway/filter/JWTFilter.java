@@ -51,15 +51,13 @@ public class JWTFilter implements GlobalFilter{
         String token = exchange.getRequest().getHeaders().getFirst("token");
         ServerHttpResponse response = exchange.getResponse();
         if (!StringUtils.hasText(token)) {
-            // token为空
             log.warn("token为空");
             return tokenFailure(response, ExceptionMsgEnum.NOT_LOGIN);
         }
         try {
             Map<String, Object> map = JWTUtil.parseToken(token);
             if (map == null ||!StringUtils.hasText(String.valueOf(map.get("userId")))) {
-                // token不合法
-                log.error("token不合法");
+                log.error("token为null或没有获取到token");
                 return tokenFailure(response,ExceptionMsgEnum.TOKEN_INVALID);
             }
             // 判断token是否过期
@@ -67,7 +65,6 @@ public class JWTFilter implements GlobalFilter{
                     RedisKey.build(RedisConstant.REDIS_KEY_USER_LOGIN_EXPIRE,
                             String.valueOf(map.get("userId"))));
             if (expire == null || expire < System.currentTimeMillis()) {
-                // token过期
                 log.warn("token过期");
                 return tokenFailure(response,ExceptionMsgEnum.TOKEN_EXPIRED);
             }
@@ -75,7 +72,6 @@ public class JWTFilter implements GlobalFilter{
             String currentToken = (String)redisCache.hget(RedisKey.build(RedisConstant.REDIS_KEY_USER_LOGIN_INFO, String.valueOf(map.get("userId"))),
                     "token");
             if(!token.equals(currentToken)){
-                // 告知用户，您的账号在其他地方登录或者登录信息已过期
                 log.warn("您的账号在其他地方登录或者登录信息已过期");
                 return tokenFailure(response,ExceptionMsgEnum.ACCOUNT_OTHER_LOGIN);
             }
@@ -86,7 +82,6 @@ public class JWTFilter implements GlobalFilter{
                         System.currentTimeMillis() + jwtProperties.getExpireTime());
             }
         } catch (Exception e) {
-            // token不合法
             log.error("token不合法", e);
             return tokenFailure(response,ExceptionMsgEnum.TOKEN_INVALID);
         }
@@ -96,7 +91,6 @@ public class JWTFilter implements GlobalFilter{
 
     private Boolean checkPath(String path) {
         List<String> paths= releasePath.getPath();
-        System.out.println(paths);
         if(paths==null|| paths.isEmpty()){
             return false;
         }

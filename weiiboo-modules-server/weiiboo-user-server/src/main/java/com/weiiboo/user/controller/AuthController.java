@@ -5,9 +5,6 @@ package com.weiiboo.user.controller;
 import com.weiiboo.common.Utils.FieldValidationUtil;
 import com.weiiboo.common.Utils.ResultUtil;
 import com.weiiboo.common.domin.Result;
-import com.weiiboo.common.redis.constant.BloomFilterMap;
-import com.weiiboo.common.web.aop.bloomFilter.BloomFilterProcessing;
-import com.weiiboo.common.web.aop.idempotent.Idempotent;
 import com.weiiboo.common.web.exception.BusinessException;
 import com.weiiboo.common.myEnum.ExceptionMsgEnum;
 import com.weiiboo.modules.api.user.vo.RegisterInfoVO;
@@ -32,10 +29,10 @@ public class AuthController {
     @PostMapping("/loginByPhone")
     public Result<UserVO> loginByPhoneNumber(String phoneNumber, String password){
         if(!FieldValidationUtil.isPhoneNumber(phoneNumber)){
-            return ResultUtil.errorPost("手机号格式不正确");
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID.getMsg());
         }
         if(!FieldValidationUtil.isPassword(password)){
-            return ResultUtil.errorPost("密码必须包含数字和字母，长度为6-16位");
+            return ResultUtil.errorPost(ExceptionMsgEnum.PASSWORD_INVALID.getMsg());
         }
         return usersService.loginByPhoneNumber(phoneNumber,password);
     }
@@ -49,10 +46,10 @@ public class AuthController {
     @PostMapping("/loginByUid")
     public Result<UserVO> loginByUid(String uid, String password){
         if(!FieldValidationUtil.isUid(uid)){
-            return ResultUtil.errorPost("uid格式不正确");
+            return ResultUtil.errorPost(ExceptionMsgEnum.UDI_INVALID.getMsg());
         }
         if(!FieldValidationUtil.isPassword(password)){
-            return ResultUtil.errorPost("密码必须包含数字和字母，长度为6-16位");
+            return ResultUtil.errorPost(ExceptionMsgEnum.PASSWORD_INVALID.getMsg());
         }
         return usersService.loginByUid(uid,password);
     }
@@ -65,13 +62,13 @@ public class AuthController {
     @PostMapping("/register")
     public Result<?>register(@RequestBody RegisterInfoVO registerInfoVO){
         if(!FieldValidationUtil.isPhoneNumber(registerInfoVO.getPhoneNumber())){
-            return ResultUtil.errorPost("手机号格式不正确");
+            return ResultUtil.errorPost(ExceptionMsgEnum.PHONE_NUMBER_INVALID.getMsg());
         }
         if(!FieldValidationUtil.isPassword(registerInfoVO.getPassword())){
-            return ResultUtil.errorPost("密码必须包含数字和字母，长度为6-16位");
+            return ResultUtil.errorPost(ExceptionMsgEnum.PASSWORD_INVALID.getMsg());
         }
         if(!FieldValidationUtil.isSmsCode(registerInfoVO.getSmsCode())){
-            return ResultUtil.errorPost("验证码格式不正确");
+            return ResultUtil.errorPost(ExceptionMsgEnum.SMS_CODE_INVALID.getMsg());
         }
         return usersService.register(registerInfoVO);
     }
